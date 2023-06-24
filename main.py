@@ -11,14 +11,15 @@ args = {
     'provide_context': True
 }
 
-APPID = Variable.get("APPID")
-print(APPID)
 start_hour = 1
 horizont_hours = 24
 
 
 def extract_geo(**kwargs):
     import requests
+
+    APPID = Variable.get("APPID")
+    print(APPID)
 
     ti = kwargs['ti']
     # запрос локаций городов Московской области (города взяла просто из списка первых в МО)
@@ -46,10 +47,12 @@ def extract_transform_weather(**kwargs):
     from data import db_session
     from sqlalchemy import create_engine
     import requests
-
     ti = kwargs['ti']
     geo = ti.xcom_pull(key='geo', task_ids=['extract_geo'])[0]
+    # print(geo)
     # загрузка данных с сайта погоды
+    APPID = Variable.get("APPID")
+    print(APPID)
     URL_BASE = "https://api.openweathermap.org/data/2.5/forecast?"
     db_session.global_init("db/weather.db")
     # параметр - количество выгружаемых записей на один объект
@@ -95,12 +98,15 @@ def query(**kwargs):
     import datetime as dt
     from data.weather import Weather
     from data import db_session
+    import matplotlib.pyplot as plt
     from sqlalchemy import create_engine
     import pandas as pd
-    ti = kwargs['ti']
-    cols, condition, group, type = ti.xcom_pull(key='query', task_ids=['main'])[0]
+    cols = f'city, avg(temp_min) as avg_temp_min, max(wind_speed) as max_wind_speed, min(wind_speed) as min_wind_speed'
+    condition = "city like 'А%%' or city like '%%а'"
+    group = 'city'
+    type = 'line'
     # создание курсора
-    engine = create_engine('sqlite:///db/weather.db', echo=True)
+    engine = create_engine('postgresql+psycopg2://airflow:airflow@postgres/airflow')
     # формирование витрины по запросам
     if cols and condition and group:
         qu = f'select {cols} from weather where {condition} group by {group}'
@@ -108,61 +114,32 @@ def query(**kwargs):
         qu = f'select {cols} from weather where {condition}'
     elif cols:
         qu = f'select {cols} from weather'
+    print(qu)
     # получение датафрейма из ответа на запрос
     df = pd.read_sql_query(qu, engine)
     print(df)
     st = cols.split(', ')
-    ti.xcom_push(key='query_draw', value=(df, st, group, type))
-
-
-def draw(**kwargs):
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-
-    ti = kwargs['ti']
-    df, st, group, type = ti.xcom_pull(key='query_draw', task_ids=['query'])[0]
     # функция построения графика для одной витрины под разные параметры
-    sns.set_theme(style="darkgrid")
+    plt.figure(figsize=(40, 24))
     x = st[0]
-    y = st[1:]
+    y = ['avg_temp_min', 'max_wind_speed', 'min_wind_speed']
     if type == 'line':
-        sns.lineplot(data=df)
+        df.plot(title=f'{y}', x=x, y=y,
+                grid=True, stacked=True)
     elif type == 'bar':
-        sns.barplot(data=df)
+        df.plot(title=f'{y}', x=x, y=y,
+                grid=True, kind='bar', stacked=True)
     elif type == 'hist':
-        sns.histplot(data=df, x=x, y=st[2], hue=st[1])
+        df.plot(title=f'{y}', x=x, y=y,
+                grid=True, kind='hist', stacked=True)
     elif type == 'scatter':
-        sns.scatterplot(data=df)
-    elif type == 'heat':
-        sns.heatmap(data=df)
-    plt.show()
-
-
-def main(**kwargs):
-
-    ti = kwargs['ti']
-    # формирование витрин
-    queries = {'cols': [f'city, max(temp_max), max(wind_speed), min(wind_speed)',
-                        f'date, max(humidity), max(wind_speed), min(wind_speed)',
-                        f'wind_speed, humidity'
-                        ],
-               'condition': ['city like "А%"',
-                             'temp_min > 5',
-                             None
-                             ],
-               'group': ['city',
-                         'date',
-                         None
-                         ],
-               'type': ['bar', 'hist', 'line']}
-    # запрос на визуализацию данных
-    for i in range(len(queries['cols'])):
-        cols = queries['cols'][i]
-        condition = queries['condition'][i]
-        group = queries['group'][i]
-        type = queries['type'][i]
-        ti.xcom_push(key='query', value=(cols, condition, group, type))
-
+        df.plot(title=f'{y}', x=x, y=y,
+                grid=True, kind='scatter', stacked=True)
+    elif type == 'pie':
+        df.plot(title=f'{y}', y=x,
+                grid=True, kind='pie')
+    # cохраняем картинку
+    plt.savefig(f'./logs/img_{type}.png', dpi=300)
 
 
 with DAG('weather_base', description='weather_base', schedule_interval='5 * * * *', catchup=False,
@@ -170,8 +147,6 @@ with DAG('weather_base', description='weather_base', schedule_interval='5 * * * 
     extract_geo = PythonOperator(task_id='extract_geo', python_callable=extract_geo)
     extract_transform_weather = PythonOperator(task_id='extract_transform_weather',
                                                python_callable=extract_transform_weather)
-    main = PythonOperator(task_id='main', python_callable=main)
     query = PythonOperator(task_id='query', python_callable=query)
-    draw = PythonOperator(task_id='draw', python_callable=draw)
 
-    extract_geo >> extract_transform_weather >> main >> query >> draw
+    extract_geo >> extract_transform_weather >> query
