@@ -27,5 +27,14 @@
 * отчет в виде картинок помещаю сюда
 
 # Иллюстрации по Airflow
-
+![Календарь](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/calendar.png)
+![Код](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/code.png)
+![Даги](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/dags.png)
+![Gant](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/gant.png)
+![Граф](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/graph.png)
+![Грид](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/grid.png)
+![Логи](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/logs.png)
+![БД_структура](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_head_dbeaver.png)
+![БД_содержание](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_table_dbeaver.png)
+![График](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/img_line.png)
 
