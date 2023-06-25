@@ -37,4 +37,5 @@
 ![БД_структура](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_head_dbeaver.png)
 ![БД_содержание](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_table_dbeaver.png)
 ![График](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/img_line.png)
+![Грид_25_06](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/grid25_06.png)
 
