@@ -34,6 +34,7 @@
 ![Граф](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/graph.png)
 ![Грид](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/grid.png)
 ![Логи](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/logs.png)
+![Эволюция задач](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/tasks.png)
 ![БД_структура](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_head_dbeaver.png)
 ![БД_содержание](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/db_weather_table_dbeaver.png)
 ![График с накоплением](https://github.com/OlgaMurzina/Weather_airflow/blob/main/images/img_line.png)
